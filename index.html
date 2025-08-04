@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมทฤษฎีสี - 3 เกมส์ท้าทาย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Kanit', sans-serif; }
+        
+        .color-wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #ff0000 0deg,
+                #ff8000 30deg,
+                #ffff00 60deg,
+                #80ff00 90deg,
+                #00ff00 120deg,
+                #00ff80 150deg,
+                #00ffff 180deg,
+                #0080ff 210deg,
+                #0000ff 240deg,
+                #8000ff 270deg,
+                #ff00ff 300deg,
+                #ff0080 330deg,
+                #ff0000 360deg
+            );
+            position: relative;
+            margin: 0 auto;
+        }
+        
+        .color-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: absolute;
+            border: 4px solid white;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .color-dot:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        
+        .color-option {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            font-size: 16px;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+        
+        .color-option.selected {
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+        
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timer-warning {
+            animation: timerPulse 1s infinite;
+        }
+        
+        @keyframes timerPulse {
+            0%, 100% { color: #ef4444; }
+            50% { color: #dc2626; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-purple-800 mb-2">🎨 เกมทฤษฎีสี</h1>
+            <p class="text-lg text-gray-700 mb-2">3 เกมส์ท้าทายพร้อมระบบจับเวลา</p>
+            <div class="bg-white rounded-lg shadow-md px-4 py-2 inline-block">
+                <p class="text-sm text-gray-600">ผู้จัดทำสื่อเกมส์: <span class="font-semibold text-purple-700">นางสาวสุนิสา เนาวรัตน์</span></p>
+            </div>
+        </div>
+
+        <!-- Game Mode Selection -->
+        <div id="modeSelection" class="max-w-6xl mx-auto mb-8">
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="startGame('analogous')">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🌈</div>
+                        <h3 class="text-2xl font-semibold text-blue-800 mb-2">สีคุมโทน</h3>
+                        <p class="text-gray-600 mb-4">เลือกสีที่อยู่ใกล้กันในวงล้อสี</p>
+                        <div class="text-sm text-gray-500 mb-4">⏱️ เวลา: 30 วินาที/ข้อ</div>
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                            เริ่มเล่น
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="startGame('complementary')">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">⚡</div>
+                        <h3 class="text-2xl font-semibold text-red-800 mb-2">สีคู่ตรงข้าม</h3>
+                        <p class="text-gray-600 mb-4">เลือกสีที่อยู่ตรงข้ามกันในวงล้อสี</p>
+                        <div class="text-sm text-gray-500 mb-4">⏱️ เวลา: 25 วินาที/ข้อ</div>
+                        <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                            เริ่มเล่น
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="startGame('triadic')">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🔺</div>
+                        <h3 class="text-2xl font-semibold text-green-800 mb-2">สีสามเหลี่ยม</h3>
+                        <p class="text-gray-600 mb-4">เลือกสี 3 สีที่ห่างกัน 120 องศา</p>
+                        <div class="text-sm text-gray-500 mb-4">⏱️ เวลา: 35 วินาที/ข้อ</div>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                            เริ่มเล่น
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="gameArea" class="hidden max-w-6xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <!-- Game Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="gameTitle" class="text-2xl font-semibold text-gray-800"></h2>
+                    <div class="flex items-center space-x-6">
+                        <div id="timer" class="text-2xl font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-lg">
+                            ⏱️ <span id="timeLeft">30</span>
+                        </div>
+                        <div class="text-lg font-medium text-green-600">
+                            คะแนน: <span id="score">0</span>
+                        </div>
+                        <div class="text-lg font-medium text-purple-600">
+                            ข้อ: <span id="questionNumber">1</span>/10
+                        </div>
+                        <button onclick="backToMenu()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            กลับเมนู
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Content -->
+                <div id="wheelGame" class="hidden">
+                    <!-- Color Wheel -->
+                    <div class="text-center mb-8">
+                        <div class="color-wheel mx-auto mb-4" id="colorWheel">
+                            <!-- Color dots will be added by JavaScript -->
+                        </div>
+                        <p id="instruction" class="text-lg text-gray-700 font-medium"></p>
+                    </div>
+
+                    <!-- Selected Colors Display -->
+                    <div id="selectedColors" class="flex justify-center space-x-4 mb-6">
+                        <!-- Selected colors will appear here -->
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Game -->
+                <div id="choiceGame" class="hidden">
+                    <div class="text-center mb-8">
+                        <div id="targetColorDisplay" class="w-48 h-48 rounded-xl mx-auto mb-4 shadow-lg border-4 border-white"></div>
+                        <p id="choiceInstruction" class="text-xl text-gray-700 font-medium mb-6"></p>
+                        <div id="colorOptions" class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                            <!-- Color options will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback -->
+                <div id="feedback" class="text-center mb-6 min-h-[60px]">
+                    <!-- Feedback messages will appear here -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center space-x-4">
+                    <button id="checkBtn" onclick="checkAnswer()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" disabled>
+                        ตรวจสอบคำตอบ
+                    </button>
+                    <button id="nextBtn" onclick="nextQuestion()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors hidden">
+                        คำถามถัดไป
+                    </button>
+                    <button id="resetBtn" onclick="resetSelection()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        เริ่มใหม่
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="hidden max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div class="text-6xl mb-4">🏆</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">เกมจบแล้ว!</h2>
+                <div id="finalScore" class="text-2xl font-semibold text-green-600 mb-4"></div>
+                <div id="timeBonus" class="text-lg text-blue-600 mb-6"></div>
+                <div id="performance" class="text-lg text-gray-700 mb-6"></div>
+                <button onclick="backToMenu()" class="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    เล่นใหม่
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = '';
+        let score = 0;
+        let selectedColors = [];
+        let targetColor = '';
+        let questionCount = 0;
+        let totalQuestions = 10;
+        let timeLeft = 30;
+        let timerInterval;
+        let gameStartTime;
+        let totalTime = 0;
+        
+        const colors = [
+            { name: 'แดง', color: '#ff0000', angle: 0 },
+            { name: 'ส้ม', color: '#ff8000', angle: 30 },
+            { name: 'เหลือง', color: '#ffff00', angle: 60 },
+            { name: 'เหลืองเขียว', color: '#80ff00', angle: 90 },
+            { name: 'เขียว', color: '#00ff00', angle: 120 },
+            { name: 'เขียวฟ้า', color: '#00ff80', angle: 150 },
+            { name: 'ฟ้า', color: '#00ffff', angle: 180 },
+            { name: 'น้ำเงินฟ้า', color: '#0080ff', angle: 210 },
+            { name: 'น้ำเงิน', color: '#0000ff', angle: 240 },
+            { name: 'ม่วงน้ำเงิน', color: '#8000ff', angle: 270 },
+            { name: 'ม่วง', color: '#ff00ff', angle: 300 },
+            { name: 'ม่วงแดง', color: '#ff0080', angle: 330 }
+        ];
+
+        function startGame(mode) {
+            currentMode = mode;
+            score = 0;
+            questionCount = 0;
+            totalTime = 0;
+            gameStartTime = Date.now();
+            
+            document.getElementById('modeSelection').classList.add('hidden');
+            document.getElementById('gameArea').classList.remove('hidden');
+            
+            // Set game title and time limit
+            if (mode === 'analogous') {
+                document.getElementById('gameTitle').textContent = '🌈 เกมสีคุมโทน';
+                timeLeft = 30;
+            } else if (mode === 'complementary') {
+                document.getElementById('gameTitle').textContent = '⚡ เกมสีคู่ตรงข้าม';
+                timeLeft = 25;
+            } else if (mode === 'triadic') {
+                document.getElementById('gameTitle').textContent = '🔺 เกมสีสามเหลี่ยม';
+                timeLeft = 35;
+            }
+            
+            // Show appropriate game interface
+            if (mode === 'analogous') {
+                document.getElementById('wheelGame').classList.remove('hidden');
+                document.getElementById('choiceGame').classList.add('hidden');
+                createColorWheel();
+            } else {
+                document.getElementById('wheelGame').classList.add('hidden');
+                document.getElementById('choiceGame').classList.remove('hidden');
+            }
+            
+            nextQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timeLeft').textContent = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeft').textContent = timeLeft;
+                
+                // Warning when time is running out
+                if (timeLeft <= 10) {
+                    document.getElementById('timer').classList.add('timer-warning');
+                } else {
+                    document.getElementById('timer').classList.remove('timer-warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function timeUp() {
+            document.getElementById('feedback').innerHTML = 
+                `<div class="text-red-600 font-semibold text-xl">⏰ หมดเวลา!</div>
+                 <p class="text-gray-600 mt-2">ไม่เป็นไร ลองข้อถัดไปกันเลย</p>`;
+            
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('nextBtn').classList.remove('hidden');
+        }
+
+        function createColorWheel() {
+            const wheel = document.getElementById('colorWheel');
+            wheel.innerHTML = '';
+            
+            colors.forEach((colorData, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'color-dot';
+                dot.style.backgroundColor = colorData.color;
+                
+                // Position dots around the circle
+                const angle = (index * 30) * Math.PI / 180;
+                const radius = 125;
+                const x = Math.cos(angle) * radius + 135;
+                const y = Math.sin(angle) * radius + 135;
+                
+                dot.style.left = x + 'px';
+                dot.style.top = y + 'px';
+                dot.dataset.colorIndex = index;
+                dot.title = colorData.name;
+                
+                dot.addEventListener('click', () => selectColor(index));
+                wheel.appendChild(dot);
+            });
+        }
+
+        function createMultipleChoice() {
+            const targetIndex = Math.floor(Math.random() * colors.length);
+            const targetColorData = colors[targetIndex];
+            
+            // Display target color
+            document.getElementById('targetColorDisplay').style.backgroundColor = targetColorData.color;
+            
+            let correctAnswers = [];
+            let instruction = '';
+            
+            if (currentMode === 'complementary') {
+                instruction = `เลือกสีที่เป็นสีคู่ตรงข้ามกับสี${targetColorData.name}`;
+                const complementIndex = (targetIndex + 6) % 12;
+                correctAnswers = [complementIndex];
+            } else if (currentMode === 'triadic') {
+                instruction = `เลือกสี 2 สีที่ทำให้เกิดสีสามเหลี่ยมกับสี${targetColorData.name}`;
+                const triadic1 = (targetIndex + 4) % 12;
+                const triadic2 = (targetIndex + 8) % 12;
+                correctAnswers = [triadic1, triadic2];
+            }
+            
+            document.getElementById('choiceInstruction').textContent = instruction;
+            
+            // Create options
+            const optionsContainer = document.getElementById('colorOptions');
+            optionsContainer.innerHTML = '';
+            
+            // Generate wrong answers
+            let allOptions = [...correctAnswers];
+            while (allOptions.length < 8) {
+                const randomIndex = Math.floor(Math.random() * colors.length);
+                if (!allOptions.includes(randomIndex) && randomIndex !== targetIndex) {
+                    allOptions.push(randomIndex);
+                }
+            }
+            
+            // Shuffle options
+            allOptions = allOptions.sort(() => Math.random() - 0.5);
+            
+            allOptions.forEach(colorIndex => {
+                const option = document.createElement('div');
+                option.className = 'color-option';
+                option.style.backgroundColor = colors[colorIndex].color;
+                option.textContent = colors[colorIndex].name;
+                option.dataset.colorIndex = colorIndex;
+                option.addEventListener('click', () => selectMultipleChoice(colorIndex, option));
+                optionsContainer.appendChild(option);
+            });
+            
+            // Store correct answers for checking
+            window.currentCorrectAnswers = correctAnswers;
+            window.currentTargetIndex = targetIndex;
+        }
+
+        function selectColor(colorIndex) {
+            const colorData = colors[colorIndex];
+            
+            if (selectedColors.includes(colorIndex)) {
+                return; // Already selected
+            }
+            
+            selectedColors.push(colorIndex);
+            updateSelectedColorsDisplay();
+            
+            // Add visual feedback
+            const dot = document.querySelector(`[data-color-index="${colorIndex}"]`);
+            dot.classList.add('pulse');
+            
+            // Enable check button when enough colors are selected
+            const requiredColors = 3; // Analogous needs 3 colors
+            if (selectedColors.length >= requiredColors) {
+                document.getElementById('checkBtn').disabled = false;
+            }
+        }
+
+        function selectMultipleChoice(colorIndex, element) {
+            if (selectedColors.includes(colorIndex)) {
+                // Deselect
+                selectedColors = selectedColors.filter(c => c !== colorIndex);
+                element.classList.remove('selected');
+            } else {
+                // Select
+                const maxSelections = currentMode === 'complementary' ? 1 : 2;
+                if (selectedColors.length < maxSelections) {
+                    selectedColors.push(colorIndex);
+                    element.classList.add('selected');
+                }
+            }
+            
+            const requiredSelections = currentMode === 'complementary' ? 1 : 2;
+            document.getElementById('checkBtn').disabled = selectedColors.length !== requiredSelections;
+        }
+
+        function updateSelectedColorsDisplay() {
+            const container = document.getElementById('selectedColors');
+            container.innerHTML = '';
+            
+            selectedColors.forEach(colorIndex => {
+                const colorData = colors[colorIndex];
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'w-24 h-24 rounded-lg shadow-md border-3 border-white flex items-center justify-center text-white font-medium text-base fade-in';
+                colorDiv.style.backgroundColor = colorData.color;
+                colorDiv.textContent = colorData.name;
+                container.appendChild(colorDiv);
+            });
+        }
+
+        function nextQuestion() {
+            questionCount++;
+            selectedColors = [];
+            clearInterval(timerInterval);
+            
+            if (questionCount > totalQuestions) {
+                endGame();
+                return;
+            }
+            
+            document.getElementById('questionNumber').textContent = questionCount;
+            document.getElementById('selectedColors').innerHTML = '';
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('nextBtn').classList.add('hidden');
+            document.getElementById('score').textContent = score;
+            
+            // Remove visual effects
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                dot.classList.remove('pulse');
+            });
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Set time limit based on game mode
+            if (currentMode === 'analogous') {
+                timeLeft = 30;
+            } else if (currentMode === 'complementary') {
+                timeLeft = 25;
+            } else if (currentMode === 'triadic') {
+                timeLeft = 35;
+            }
+            
+            // Generate new question
+            if (currentMode === 'analogous') {
+                generateAnalogousQuestion();
+            } else {
+                createMultipleChoice();
+            }
+            
+            startTimer();
+        }
+
+        function generateAnalogousQuestion() {
+            const baseColorIndex = Math.floor(Math.random() * colors.length);
+            targetColor = colors[baseColorIndex].name;
+            
+            document.getElementById('instruction').innerHTML = 
+                `เลือก <strong>3 สี</strong> ที่เป็นสีคุมโทนกับสี<strong>${targetColor}</strong><br>
+                <small class="text-gray-500">(สีที่อยู่ใกล้กันในวงล้อสี)</small>`;
+        }
+
+        function checkAnswer() {
+            clearInterval(timerInterval);
+            let isCorrect = false;
+            let feedbackMessage = '';
+            let points = 0;
+            
+            if (currentMode === 'analogous') {
+                isCorrect = checkAnalogousAnswer();
+                points = isCorrect ? 10 : 0;
+            } else if (currentMode === 'complementary') {
+                isCorrect = checkComplementaryAnswer();
+                points = isCorrect ? 15 : 0;
+            } else if (currentMode === 'triadic') {
+                isCorrect = checkTriadicAnswer();
+                points = isCorrect ? 20 : 0;
+            }
+            
+            // Time bonus
+            const timeBonus = Math.max(0, Math.floor(timeLeft / 5));
+            if (isCorrect) {
+                points += timeBonus;
+                score += points;
+            }
+            
+            if (isCorrect) {
+                feedbackMessage = `<div class="text-green-600 font-semibold text-xl">🎉 ถูกต้อง! +${points} คะแนน</div>`;
+                if (timeBonus > 0) {
+                    feedbackMessage += `<p class="text-blue-600 mt-1">โบนัสเวลา: +${timeBonus} คะแนน</p>`;
+                }
+            } else {
+                feedbackMessage = `<div class="text-red-600 font-semibold text-xl">❌ ไม่ถูกต้อง</div>`;
+            }
+            
+            // Add explanation
+            if (currentMode === 'analogous') {
+                feedbackMessage += `<p class="text-gray-600 mt-2">สีคุมโทนคือสีที่อยู่ใกล้กันในวงล้อสี</p>`;
+            } else if (currentMode === 'complementary') {
+                feedbackMessage += `<p class="text-gray-600 mt-2">สีคู่ตรงข้ามอยู่ตรงข้ามกันในวงล้อสี</p>`;
+            } else if (currentMode === 'triadic') {
+                feedbackMessage += `<p class="text-gray-600 mt-2">สีสามเหลี่ยมห่างกัน 120 องศา (4 ตำแหน่ง)</p>`;
+            }
+            
+            document.getElementById('feedback').innerHTML = feedbackMessage;
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('nextBtn').classList.remove('hidden');
+        }
+
+        function checkAnalogousAnswer() {
+            if (selectedColors.length !== 3) return false;
+            
+            const targetIndex = colors.findIndex(c => c.name === targetColor);
+            const sortedColors = [...selectedColors].sort((a, b) => a - b);
+            
+            // Check if colors are consecutive or close to each other
+            for (let i = 0; i < sortedColors.length - 1; i++) {
+                const diff = Math.abs(sortedColors[i + 1] - sortedColors[i]);
+                if (diff > 2 && diff < 10) {
+                    return false;
+                }
+            }
+            
+            return selectedColors.some(index => Math.abs(index - targetIndex) <= 1 || Math.abs(index - targetIndex) >= 11);
+        }
+
+        function checkComplementaryAnswer() {
+            if (selectedColors.length !== 1) return false;
+            return selectedColors.includes(window.currentCorrectAnswers[0]);
+        }
+
+        function checkTriadicAnswer() {
+            if (selectedColors.length !== 2) return false;
+            return window.currentCorrectAnswers.every(answer => selectedColors.includes(answer));
+        }
+
+        function endGame() {
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+            
+            const totalGameTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            const avgTimePerQuestion = Math.floor(totalGameTime / totalQuestions);
+            
+            document.getElementById('finalScore').textContent = `คะแนนรวม: ${score} คะแนน`;
+            document.getElementById('timeBonus').textContent = `เวลาเฉลี่ย: ${avgTimePerQuestion} วินาที/ข้อ`;
+            
+            let performance = '';
+            if (score >= 150) {
+                performance = '🏆 ยอดเยี่ยม! คุณเป็นผู้เชี่ยวชาญด้านสี!';
+            } else if (score >= 100) {
+                performance = '🥈 ดีมาก! คุณมีความรู้ด้านสีดี';
+            } else if (score >= 50) {
+                performance = '🥉 ดี! ลองฝึกฝนเพิ่มเติม';
+            } else {
+                performance = '📚 ลองศึกษาทฤษฎีสีเพิ่มเติมนะ';
+            }
+            
+            document.getElementById('performance').textContent = performance;
+        }
+
+        function resetSelection() {
+            selectedColors = [];
+            document.getElementById('selectedColors').innerHTML = '';
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('nextBtn').classList.add('hidden');
+            
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                dot.classList.remove('pulse');
+            });
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+
+        function backToMenu() {
+            clearInterval(timerInterval);
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('modeSelection').classList.remove('hidden');
+            resetSelection();
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969b4f0c4462d33d',t:'MTc1NDI4MTcxNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
